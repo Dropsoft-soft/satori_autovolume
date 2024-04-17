@@ -1,6 +1,7 @@
 from loguru import logger
 from web3 import Web3, AsyncHTTPProvider
 from web3.eth import AsyncEth
+from eth_account.messages import encode_defunct
 from .data import DATA
 from .utils import WALLET_PROXIES, WALLETS, decimalToInt, intToDecimal, round_to, sleeping, ERC20_ABI
 from user_data.config import RETRY, USE_PROXY
@@ -104,6 +105,7 @@ class WebClient():
             return False
         else:
             return True
+        
     async def get_allowance(self, token_address: str, spender: str) -> int:
         try:
             contract = await self.web3.eth.contract(address=Web3.to_checksum_address(token_address), abi=ERC20_ABI)
@@ -204,3 +206,9 @@ class WebClient():
         except Exception as error:
             logger.error(error)
             return False, error
+        
+    async def sign_message(self, message_text: str) -> str:
+        message = encode_defunct(text=message_text)
+        signed_message = self.web3.to_hex(
+            self.web3.eth.account.sign_message(message, private_key=self.key).signature)
+        return signed_message
