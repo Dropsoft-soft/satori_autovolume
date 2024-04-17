@@ -4,7 +4,7 @@ import time
 import tqdm
 import asyncio
 
-with open(f"abi/erc_20.json", "r") as f:
+with open(f"core/abi/erc_20.json", "r") as f:
     ERC20_ABI = [row.strip() for row in f]
 
 with open(f"user_data/wallets.txt", "r") as f:

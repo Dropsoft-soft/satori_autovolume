@@ -8,8 +8,9 @@ import asyncio
 import random
 import time
 
-class Client():
-    def __init__(self, key: str, chain: str):
+class WebClient():
+    def __init__(self, id:int, key: str, chain: str):
+        self.id = id
         self.key = key
         self.chain = chain
         self.web3 = self._initialize_web3()
@@ -46,7 +47,7 @@ class Client():
 
         return {'address': address, 'symbol': symbol, 'decimal': decimal, 'contract': token_contract}
     
-    async def get_balance(self, token_address: str) -> float | int:
+    async def get_balance(self, token_address: str) -> float:
         while True:
             try:
                 token_data = await self.get_token_info(token_address)
@@ -62,7 +63,7 @@ class Client():
                 logger.error(error)
                 await asyncio.sleep(1)
 
-    async def wait_balance(self, min_balance: float | int, token_address: str):
+    async def wait_balance(self, min_balance: float, token_address: str):
         token_data = await self.get_token_info(token_address)
         logger.info(f'{self.address} | waiting {min_balance} {token_data["symbol"]} [{self.chain}]')
 
@@ -184,7 +185,7 @@ class Client():
                     return 1
                 await asyncio.sleep(1)
     
-    async def get_amount_in(self, keep_from: float | int, keep_to: float | int, all_balance: bool, token: str, amount_from: float | int, amount_to: float | int, multiplier=1) -> float | int:
+    async def get_amount_in(self, keep_from: float, keep_to: float, all_balance: bool, token: str, amount_from: float, amount_to: float, multiplier=1) -> int:
         keep_value = round(random.uniform(keep_from, keep_to), 8)
         if all_balance: amount = await self.get_balance(token) - keep_value
         else: amount = round(random.uniform(amount_from, amount_to), 8)
