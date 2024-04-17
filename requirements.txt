@@ -4,3 +4,4 @@ art==6.1
 loguru==0.7.2
 setuptools
 web3
+art==6.1

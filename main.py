@@ -1,7 +1,7 @@
 import asyncio
 import platform
 import sys
-from core.utils import WALLETS
+from core.utils import WALLETS, show_dev_info
 from core.__init__ import *
 from user_data.config import CHAIN
 
@@ -16,8 +16,9 @@ def get_wallets():
 
 
 if __name__ == "__main__":
-    if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
-      asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    if sys.platform == 'win32':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    show_dev_info()
     wallets = get_wallets()
     
     for wallet in wallets:

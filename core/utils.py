@@ -3,6 +3,9 @@ import random
 import time
 import tqdm
 import asyncio
+from art import tprint
+import sys
+import os
 
 with open(f"core/abi/erc_20.json", "r") as f:
     ERC20_ABI = [row.strip() for row in f]
@@ -44,4 +47,13 @@ async def async_sleeping(from_sleep, to_sleep):
     x = random.randint(from_sleep, to_sleep)
     for i in tqdm(range(x), desc='sleep ', bar_format='{desc}: {n_fmt}/{total_fmt}'):
         await asyncio.sleep(1)
+def show_dev_info():
+    tprint("Dropsoft_satori")
+    print("")
+    print("\033[36m" + "VERSION: " + "\033[34m" + "1.0" + "\033[34m")
+    print("\033[36m" + "DEV: " + "\033[34m" + "https://t.me/drop_software" + "\033[34m")
+    print("\033[36m" +"GitHub: " + "\033[34m" + "https://github.com/Dropsoft-soft/satori_autovolume" + "\033[34m")
+    print("\033[36m" + "DONATION EVM ADDRESS: " + "\033[34m" + "0xb1b1ac053248a2C88e32140e4691d2A8Be6Ab9c9" + "\033[0m")
+    print()
+
 WALLET_PROXIES  = get_wallet_proxies(WALLETS, PROXIES)
