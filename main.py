@@ -23,4 +23,4 @@ if __name__ == "__main__":
     
     for wallet in wallets:
         satori = Satori(wallet.get('id'), wallet.get('key'), CHAIN)
-        asyncio.run(satori.start_traiding())
+        asyncio.run(satori.start_trading())
