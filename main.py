@@ -1,5 +1,4 @@
 import asyncio
-import platform
 import sys
 from core.utils import WALLETS, show_dev_info
 from core.__init__ import *

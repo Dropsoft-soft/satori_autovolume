@@ -1,28 +1,7 @@
 from .client import WebClient
 from loguru import logger
-
-from .helpers import dev_logs
 from .request import global_request
 
-
-# ``` examplt asyncio
-# async def get_quotes(from_token: int, to_token: int, amount: int):
-#     async with aiohttp.ClientSession() as session:
-#         url = "https://starknet.api.avnu.fi/swap/v1/quotes"
-
-#         params = {
-#             "sellTokenAddress": hex(from_token),
-#             "buyTokenAddress": hex(to_token),
-#             "sellAmount": hex(amount),
-#             "excludeSources": "Ekubo"
-#         }
-#         response = await session.get(url=url, params=params)
-#         response_data = await response.json()
-
-#         quote_id = response_data[0]["quoteId"]
-
-#         return quote_id
-# ```
 
 class Satori(WebClient):
     def __init__(self, _id: int, private_key: str, chain: str) -> None:
@@ -49,31 +28,26 @@ class Satori(WebClient):
 
     async def start_trading(self):
         logger.info(f'start trading for account id: {self.id}')
-        nonce = self.get_nonce()
-        dev_logs(f"nonce result: {nonce}")
+        nonce = await self.get_nonce()
         if nonce is None:
             logger.info(f'can\'t get nonce for account id: {self.id}')
             return
         signed_nonce = await self.sign_message(nonce)
-        dev_logs(f"sign nonce result: {signed_nonce}")
 
-        token = self.get_token(signed_nonce)
+        token = await self.get_token(signed_nonce)
 
         self.headers['authorization'] = token
 
-        dev_logs(f"authorization: {self.headers['authorization']}")
         if token is None:
             logger.info(f'can\'t get token for account id: {self.id}')
             return
 
-        get_user = self.get_user()
-        dev_logs(f"get user: {get_user}")
+        get_user = await self.get_user()
 
-        portfolio_account = self.portfolio_account(4)
-        dev_logs(f"get portfolio_account: {portfolio_account}")
+        portfolio_account = await self.portfolio_account(4)
 
-    def get_nonce(self):
-        response_code, response = global_request(
+    async def get_nonce(self):
+        response_code, response = await global_request(
             wallet=self.address,
             url=f'https://zksync.satori.finance/api/auth/auth/generateNonce',
             json={"address": f"{self.address}"},
@@ -85,8 +59,8 @@ class Satori(WebClient):
         else:
             return None
 
-    def get_token(self, signed_nonce):
-        response_code, response = global_request(
+    async def get_token(self, signed_nonce):
+        response_code, response = await global_request(
             wallet=self.address,
             url=f'https://zksync.satori.finance/api/auth/auth/token',
             json={"address": f"{self.address}",
@@ -99,8 +73,8 @@ class Satori(WebClient):
         else:
             return None
 
-    def get_user(self):
-        response_code, response = global_request(
+    async def get_user(self):
+        response_code, response = await global_request(
             wallet=self.address,
             url=f'https://zksync.satori.finance/api/contract-provider/contract/getUser',
             proxy=self.proxy,
@@ -111,8 +85,8 @@ class Satori(WebClient):
         else:
             return None
 
-    def portfolio_account(self, coin_id):
-        response_code, response = global_request(
+    async def portfolio_account(self, coin_id):
+        response_code, response = await global_request(
             wallet=self.address,
             url=f'https://zksync.satori.finance/api/contract-provider/contract/portfolioAccount',
             json={"coinId": f'{coin_id}', "timeType": 1},
