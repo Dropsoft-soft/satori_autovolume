@@ -11,6 +11,7 @@ import time
 
 class WebClient():
     def __init__(self, id:int, key: str, chain: str):
+        self.proxy = None
         self.id = id
         self.key = key
         self.chain = chain
@@ -24,8 +25,8 @@ class WebClient():
 
         if (USE_PROXY and WALLET_PROXIES):
             try:
-                proxy = WALLET_PROXIES[self.key]
-                web3 = Web3(AsyncHTTPProvider(rpc, request_kwargs={"proxy": proxy}), modules={"eth": (AsyncEth)}, middlewares=[])
+                self.proxy = WALLET_PROXIES[self.key]
+                web3 = Web3(AsyncHTTPProvider(rpc, request_kwargs={"proxy": self.proxy}), modules={"eth": (AsyncEth)}, middlewares=[])
             except Exception as error:
                 logger.error(f'{error}. Use web3 without proxy')
         return web3
