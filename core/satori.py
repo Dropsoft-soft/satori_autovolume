@@ -1,6 +1,10 @@
 import asyncio
 import math
 import random
+import time
+from core.data import SATORI_CONTRACT
+from core.utils import intToDecimal
+from user_data.config import AMOUNT, CHAIN
 from .client import WebClient
 from loguru import logger
 from .request import global_request
@@ -44,7 +48,15 @@ class Satori(WebClient):
         token = await self.get_token(signed_nonce)
 
         self.headers['authorization'] = token
-
+        account = await self.get_balance()
+        if assets == 0:
+            logger.info(f'Process deposit')
+            status, tx_link = await self.deposit_money()
+            if status == 1:
+                logger.success(f'Deposit success | {tx_link}')
+            else:
+                logger.info('Deposit not success')
+        time.sleep(120)
         if token is None:
             logger.info(f'can\'t get token for account id: {self.id}')
             return
@@ -356,3 +368,60 @@ class Satori(WebClient):
             return [(record['id'], record['contractPairId'], record['quantity']) for record in response['data']['records']]
         else:
             return None
+        
+    async def deposit_money(self):
+        amount = intToDecimal(AMOUNT, 6)
+        encoded_with_zero = hex(amount)[2:].rjust(64, '0')
+        if CHAIN == 'zksync':
+            tx_data = '0x72f66b670000000000000000000000000000000000000000000000000001f929487740450000000000000000000000000000000000000000000000000000018ef0fc5a820000000000000000000000003355df6d4c9c3035724fd0e3914de96a5a83aaf4'+encoded_with_zero
+        else:
+            tx_data = ''
+        tx = {
+            'from': self.address,
+            'to': SATORI_CONTRACT[CHAIN],
+            'gas': 0,
+            'gasPrice': await self.web3.eth.gas_price,
+            'nonce': await self.web3.eth.get_transaction_count(self.address),
+            'value': 0,
+            'data': tx_data,
+            'chainId': self.chain_id
+        }
+        return await self.send_tx(tx)
+    
+    async def withdraw_money(self, amount):
+        timeResponse = int(time.time() * 1000)
+        logger.info(f'timerespoinse {timeResponse}')
+        sign = '{\"amount\":\"1\",\"address\":\"0x2EDEc0Da3385611C59235fc711faFac5298Cc0CA\",\"assetAddr\":\"0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4\",\"expireTime\":\"1713446800352\"}'
+        signed = await self.sign_message(sign)
+        payload = {
+            "amount":amount,
+            "originMsg": sign,
+            "signHash": signed,
+            "chainId": self.chain_id
+        }
+        #1713446347112
+        #1713446454174000000
+        response_code, response = await global_request(
+            wallet=self.address,
+            url=f'https://zksync.satori.finance/api/contract-provider/withdraw/ask',
+            json=payload,
+            proxy=self.proxy,
+            headers=self.headers)
+
+        amount = intToDecimal(amount, 6)
+        encoded_with_zero = hex(amount)[2:].rjust(64, '0')
+        if CHAIN == 'zksync':
+            tx_data = '0x83a7abd800000000000000000000000000000000000000000000000018ef14767d38000100000000000000000000000000000000000000000000000000000000662119980000000000000000000000003355df6d4c9c3035724fd0e3914de96a5a83aaf4000000000000000000000000' + self.address[2:] + encoded_with_zero + '0000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000001b000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000000000000027ee7bb17f703bae0e1ece73319c20bce6e3f2dc331f14bc7e3d6ea14651ae672afaa86f2954db51491270de94119caa1bf8a7b2f37f69dccfe1db8bc7c682c5600000000000000000000000000000000000000000000000000000000000000022c80f3ac5a20c7ee4ba56a82679ae7bc5857092c17ba1c2fdbcf9a2ab648397a24ca8355e97f0c37106afeca7d91a4e7dbb348489400419ef9e6009ac9d4e1f0'
+        else:
+            tx_data = ''
+        tx = {
+            'from': self.address,
+            'to': SATORI_CONTRACT[CHAIN],
+            'gas': 0,
+            'gasPrice': await self.web3.eth.gas_price,
+            'nonce': await self.web3.eth.get_transaction_count(self.address),
+            'value': 0,
+            'data': tx_data,
+            'chainId': self.chain_id
+        }
+        return await self.send_tx(tx)

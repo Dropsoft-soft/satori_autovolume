@@ -6,3 +6,7 @@ DATA = {
     'scroll'        : {'rpc': 'https://rpc.scroll.io',          'scan': 'https://scrollscan.com/tx',        'token': 'ETH', 'chain_id': 534352},
     'blast'         : {'rpc': 'https://rpc.blast.io',           'scan': 'https://blastscan.io/tx',          'token': 'ETH', 'chain_id': 81457},
 }
+
+SATORI_CONTRACT = {
+    'zksync': '0xED3217646d10d40E1eAAE150e004aa2BdCfCEa62'
+}
