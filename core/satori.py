@@ -48,15 +48,18 @@ class Satori(WebClient):
         token = await self.get_token(signed_nonce)
 
         self.headers['authorization'] = token
-        account = await self.get_balance()
+        portfolio_account = await self.portfolio_account(4)
+        assets = int(portfolio_account['totalAssets'])
+        
         if assets == 0:
             logger.info(f'Process deposit')
             status, tx_link = await self.deposit_money()
             if status == 1:
                 logger.success(f'Deposit success | {tx_link}')
+                time.sleep(120)
             else:
                 logger.info('Deposit not success')
-        time.sleep(120)
+       
         if token is None:
             logger.info(f'can\'t get token for account id: {self.id}')
             return
