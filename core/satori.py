@@ -50,14 +50,14 @@ class Satori(WebClient):
 
         self.headers['authorization'] = token
         portfolio_account = await self.portfolio_account(4)
-        assets = int(portfolio_account['totalAssets'])
+        assets = float(portfolio_account['totalAssets'])
         
         if assets == 0:
             logger.info(f'Process deposit')
             status, tx_link = await self.deposit_money()
             if status == 1:
                 logger.success(f'Deposit success | {tx_link} \n Sleep 120 sec.')
-                time.sleep(120)
+                await asyncio.sleep(120)
             else:
                 logger.error('Deposit not success')
                 return
@@ -177,7 +177,7 @@ class Satori(WebClient):
 
     async def open_position(self, contract_pair_id, amount):
         amount = math.floor(amount * 100) / 100
-        price = 4000 #ETH
+        price = 3200 #ETH
         quantity = round(amount / price, 3)
 
         expire_time = await self.get_time()
@@ -397,7 +397,7 @@ class Satori(WebClient):
             'chainId': self.chain_id
         }
         return await self.send_tx(tx)
-    
+    #not working
     async def withdraw_money(self, amount):
         timeResponse = int(time.time() * 1000)
         logger.info(f'timerespoinse {timeResponse}')
