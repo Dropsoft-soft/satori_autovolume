@@ -37,6 +37,15 @@ class WebClient():
     def _get_chain_id(self) -> int:
         return DATA[self.chain]['chain_id']
     
+    async def get_data_token(self, token_address: str):
+        try:
+            token_contract  = self.web3.eth.contract(address=Web3.to_checksum_address(token_address), abi=ERC20_ABI)
+            decimals        = await token_contract.functions.decimals().call()
+            symbol          = await token_contract.functions.symbol().call()
+            return token_contract, decimals, symbol
+        except Exception as error:
+            logger.error(error)
+
     async def get_token_info(self, token_address: str) -> dict:
         if token_address == '': 
             address = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'

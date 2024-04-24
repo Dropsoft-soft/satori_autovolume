@@ -1,4 +1,4 @@
 USE_PROXY = True    # Use proxies or no True/False
 RETRY = 3           # Max retry count tries
-CHAIN = 'zksync'    # Supported chains: zksync
-AMOUNT = 1.0        # amount to deposit in USDC
+CHAIN = 'base'    # Supported chains: zksync, base, scroll, linea
+AMOUNT = 29.0        # amount to deposit in USDC

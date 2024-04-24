@@ -2,7 +2,7 @@ import asyncio
 import math
 import random
 import time
-from core.data import SATORI_CONTRACT
+from core.data import SATORI_CONTRACT, USDC_CONTRACT
 from core.utils import intToDecimal
 from user_data.config import AMOUNT, CHAIN
 from .client import WebClient
@@ -18,16 +18,17 @@ pairs = [
 class Satori(WebClient):
     def __init__(self, _id: int, private_key: str, chain: str) -> None:
         super().__init__(id=_id, key=private_key, chain=chain)
+        self.base_url = f'https://{chain}.satori.finance/'
         self.headers = {
             'accept': 'application/json, text/plain, */*',
             'accept-language': 'en-US',
             'authorization': '',
-            'brand-exchange': 'zksync',
+            'brand-exchange': f'{chain}',
             'cache-control': 'no-cache',
             'content-type': 'application/json',
-            'origin': 'https://zksync.satori.finance',
+            'origin': f'https://{chain}.satori.finance',
             'pragma': 'no-cache',
-            'referer': 'https://zksync.satori.finance/portfolio/account',
+            'referer': f'{self.base_url}portfolio/account',
             'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"macOS"',
@@ -55,10 +56,11 @@ class Satori(WebClient):
             logger.info(f'Process deposit')
             status, tx_link = await self.deposit_money()
             if status == 1:
-                logger.success(f'Deposit success | {tx_link}')
+                logger.success(f'Deposit success | {tx_link} \n Sleep 120 sec.')
                 time.sleep(120)
             else:
-                logger.info('Deposit not success')
+                logger.error('Deposit not success')
+                return
        
         if token is None:
             logger.info(f'can\'t get token for account id: {self.id}')
@@ -104,7 +106,7 @@ class Satori(WebClient):
     async def get_nonce(self):
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/auth/auth/generateNonce',
+            url=f'{self.base_url}api/auth/auth/generateNonce',
             json={"address": f"{self.address}"},
             proxy=self.proxy,
             headers=self.headers)
@@ -117,7 +119,7 @@ class Satori(WebClient):
     async def get_token(self, signed_nonce):
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/auth/auth/token',
+            url=f'{self.base_url}api/auth/auth/token',
             json={"address": f"{self.address}",
                   "signature": f"{signed_nonce}"},
             proxy=self.proxy,
@@ -131,7 +133,7 @@ class Satori(WebClient):
     async def get_user(self):
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/contract-provider/contract/getUser',
+            url=f'{self.base_url}api/contract-provider/contract/getUser',
             proxy=self.proxy,
             headers=self.headers)
 
@@ -143,7 +145,7 @@ class Satori(WebClient):
     async def portfolio_account(self, coin_id):
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/contract-provider/contract/portfolioAccount',
+            url=f'{self.base_url}api/contract-provider/contract/portfolioAccount',
             json={"coinId": f'{coin_id}', "timeType": 1},
             proxy=self.proxy,
             headers=self.headers)
@@ -156,7 +158,7 @@ class Satori(WebClient):
     async def get_trade_pairs(self):
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/contract-provider/contract/contractPairList',
+            url=f'{self.base_url}api/contract-provider/contract/contractPairList',
             json={
                 "coinId": 4,
                 "coinSymbol": "USD",
@@ -188,7 +190,7 @@ class Satori(WebClient):
 
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/contract-provider/contract/order/openPosition',
+            url=f'{self.base_url}api/contract-provider/contract/order/openPosition',
             json={
                 "contractPairId": contract_pair_id,
                 "contractPositionId": 0,
@@ -218,7 +220,7 @@ class Satori(WebClient):
         response_code, response = await global_request(
             wallet=self.address,
             method="get",
-            url=f'https://zksync.satori.finance/api/third/info/time',
+            url=f'{self.base_url}api/third/info/time',
             proxy=self.proxy,
             headers=self.headers)
 
@@ -274,7 +276,7 @@ class Satori(WebClient):
 
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/contract-provider/contract/order/closePosition',
+            url=f'{self.base_url}api/contract-provider/contract/order/closePosition',
             json={
                 "contractPairId": contract_pair_id,
                 "contractPositionId": order_id,
@@ -299,7 +301,7 @@ class Satori(WebClient):
     async def get_satori_balance(self, coin_id):
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/contract-provider/contract-account/account/{coin_id}',
+            url=f'{self.base_url}api/contract-provider/contract-account/account/{coin_id}',
             json={},
             proxy=self.proxy,
             headers=self.headers)
@@ -327,7 +329,7 @@ class Satori(WebClient):
     async def get_opened_order_ids(self):
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/contract-provider/contract-current-entrust/selectContractCurrentEntrustList',
+            url=f'{self.base_url}api/contract-provider/contract-current-entrust/selectContractCurrentEntrustList',
             json={
                 'pageNo': 1,
                 'pageSize': 100
@@ -344,7 +346,7 @@ class Satori(WebClient):
         response_code, response = await global_request(
             wallet=self.address,
             method="get",
-            url=f'https://zksync.satori.finance/api/contract-provider/contract/cancelEntrust?id={record_id}',
+            url=f'{self.base_url}api/contract-provider/contract/cancelEntrust?id={record_id}',
             proxy=self.proxy,
             headers=self.headers)
 
@@ -359,7 +361,7 @@ class Satori(WebClient):
         #
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/contract-provider/contract/selectContractPositionList',
+            url=f'{self.base_url}api/contract-provider/contract/selectContractPositionList',
             json={
                 'pageNo': 1,
                 'pageSize': 100
@@ -375,8 +377,13 @@ class Satori(WebClient):
     async def deposit_money(self):
         amount = intToDecimal(AMOUNT, 6)
         encoded_with_zero = hex(amount)[2:].rjust(64, '0')
+        await self.approve(amount, USDC_CONTRACT[CHAIN], SATORI_CONTRACT[CHAIN])
         if CHAIN == 'zksync':
             tx_data = '0x72f66b670000000000000000000000000000000000000000000000000001f929487740450000000000000000000000000000000000000000000000000000018ef0fc5a820000000000000000000000003355df6d4c9c3035724fd0e3914de96a5a83aaf4'+encoded_with_zero
+        elif CHAIN == 'linea' or CHAIN == 'scroll':
+            tx_data = '0x72f66b670000000000000000000000000000000000000000000000000001d009a603b0450000000000000000000000000000000000000000000000000000018c5f01bfdd000000000000000000000000176211869ca2b568f2a7d4ee941e073a821ee1ff'+encoded_with_zero
+        elif CHAIN == 'base':
+            tx_data = '0x72f66b670000000000000000000000000000000000000000000000000001fb28fc3180450000000000000000000000000000000000000000000000000000018f10f7963b000000000000000000000000833589fcd6edb6e08f4c7c32d4f71b54bda02913'+encoded_with_zero
         else:
             tx_data = ''
         tx = {
@@ -406,7 +413,7 @@ class Satori(WebClient):
         #1713446454174000000
         response_code, response = await global_request(
             wallet=self.address,
-            url=f'https://zksync.satori.finance/api/contract-provider/withdraw/ask',
+            url=f'{self.base_url}api/contract-provider/withdraw/ask',
             json=payload,
             proxy=self.proxy,
             headers=self.headers)
