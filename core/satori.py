@@ -149,7 +149,7 @@ class Satori(WebClient):
             headers=self.headers)
 
         if response_code == 200 and response['error'] is False:
-            return response['data']['profitList']
+            return response['data']
         else:
             return None
 
