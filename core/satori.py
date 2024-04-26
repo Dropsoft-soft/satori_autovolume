@@ -4,7 +4,7 @@ import random
 import time
 from core.data import SATORI_CONTRACT, USDC_CONTRACT
 from core.utils import intToDecimal
-from user_data.config import AMOUNT, CHAIN
+from user_data.config import AMOUNT, CHAIN, pairs, LEVERAGE
 from .client import WebClient
 from loguru import logger
 from .request import global_request
@@ -187,8 +187,6 @@ class Satori(WebClient):
         message = self.get_message(quantity, self.address, expire_time, contract_pair_id, False, amount)
         message = str(message).replace("'", '"')  # Convert single quotes to double quotes
         message_hash = await self.sign_message(message)
-        # client_order_id = '7tD0_yhku_62Py33ySe2F'
-
         response_code, response = await global_request(
             wallet=self.address,
             url=f'{self.base_url}api/contract-provider/contract/order/openPosition',
@@ -200,12 +198,11 @@ class Satori(WebClient):
                 "quantity": quantity,
                 "signHash": message_hash,
                 "originMsg": message,
-                "lever": 10,
+                "lever": LEVERAGE,
                 "amount": amount,
                 "price": price,
                 "positionType": 3,
                 "matchType": 1,
-                # "clientOrderId": client_order_id
             },
             proxy=self.proxy,
             headers=self.headers)

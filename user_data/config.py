@@ -6,6 +6,8 @@ LEVERAGE = 10       # How much leverage use x10 by default
 # Traiding pairs will pick up randomly
 pairs = [               
     "ETH-USD",
-    "BTC-USD"
+    "SOL-USD",
+    "DOGE-USD",
+    "ARB-USD",
 ]
 
