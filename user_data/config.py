@@ -4,7 +4,8 @@ CHAIN = 'base'      # Supported chains: zksync, base, scroll, linea
 AMOUNT = 29.0       # amount to deposit in USDC
 LEVERAGE = 10       # How much leverage use x10 by default
 # Traiding pairs will pick up randomly
-pairs = [               
+pairs = [    
+    "BTC-USD",           
     "ETH-USD",
     "SOL-USD",
     "DOGE-USD",

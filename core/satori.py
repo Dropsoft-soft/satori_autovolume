@@ -13,14 +13,15 @@ class Satori(WebClient):
     def __init__(self, _id: int, private_key: str, chain: str) -> None:
         super().__init__(id=_id, key=private_key, chain=chain)
         self.base_url = f'https://{chain}.satori.finance/'
+        code = ''
         if chain == 'linea':
-            code = 'KKA5ON'
+            code = '?referralCode=KKA5ON'
         elif chain == 'base':
-            code == '995BOP'
+            code == '?referralCode=995BOP'
         elif chain == 'zksync':
-            code = 'KJSGOP'
+            code = '?referralCode=KJSGOP'
         else:
-            code = 'KJSHOT'
+            code = '?referralCode=KJSHOT'
         self.headers = {
             'accept': 'application/json, text/plain, */*',
             'accept-language': 'en-US',
@@ -30,7 +31,7 @@ class Satori(WebClient):
             'content-type': 'application/json',
             'origin': f'https://{chain}.satori.finance',
             'pragma': 'no-cache',
-            'referer': f'{self.base_url}?referralCode={code}',
+            'referer': f'{self.base_url}{code}',
             'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"macOS"',
@@ -74,7 +75,7 @@ class Satori(WebClient):
 
             trade_pairs = [(item['symbol'], item['id']) for item in trade_pairs_response]
             pair_id, pair_name = self.get_random_pair(trade_pairs)
-            logger.info(f'random pair {pair_id} > {pair_name}')
+            logger.info(f'random pair {pair_id}: {pair_name}')
 
             amount = await self.get_satori_balance(4)
             # await self.get_all_balance(trade_pairs_response)
@@ -188,7 +189,19 @@ class Satori(WebClient):
     async def open_position(self, contract_pair_id, amount, symbol):
         amount = math.floor(amount * 100) / 100
         price = await self.get_prise(symbol)
-        quantity = round(amount / price, 2)
+        lev = float(amount / price)
+        if symbol == "BTC":
+            quantity = round(lev, 3)
+        elif symbol == 'DOGE':
+            quantity = round(lev, 1)
+        elif symbol == 'ARB':
+            quantity = round(lev, 1)
+        else:
+            quantity = round(lev, 2)
+        if quantity < 0.0:
+            logger.error(f'To low quantity: {quantity}')
+            return
+        logger.info(f'Quantity: {quantity}')
         expire_time = await self.get_time()
         expire_time = expire_time + 60244
 

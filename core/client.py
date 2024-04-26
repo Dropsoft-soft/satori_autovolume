@@ -118,8 +118,8 @@ class WebClient():
         
     async def get_allowance(self, token_address: str, spender: str) -> int:
         try:
-            contract = await self.web3.eth.contract(address=Web3.to_checksum_address(token_address), abi=ERC20_ABI)
-            amount_approved = contract.functions.allowance(self.address, spender).call()
+            contract = self.web3.eth.contract(address=Web3.to_checksum_address(token_address), abi=ERC20_ABI)
+            amount_approved = await contract.functions.allowance(self.address, spender).call()
             return amount_approved
         except Exception as error:
             logger.error(f'{error}. Return 0')
