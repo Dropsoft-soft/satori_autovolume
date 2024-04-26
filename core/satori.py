@@ -40,12 +40,12 @@ class Satori(WebClient):
             'sec-fetch-site': 'same-origin',
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
         }
-        logger.info(f'account id: {self.id} address: {self.address}')
+        logger.info(f'account id: {self.id} account id: {self.id} address: {self.address}')
 
     async def start_trading(self):
         nonce = await self.get_nonce()
         if nonce is None:
-            logger.info(f'can\'t get nonce for account id: {self.id}')
+            logger.info(f'account id: {self.id} can\'t get nonce for account id: {self.id}')
             return
         signed_nonce = await self.sign_message(nonce)
 
@@ -56,7 +56,7 @@ class Satori(WebClient):
         assets = float(portfolio_account['totalAssets'])
         
         if assets == 0:
-            logger.info(f'Process deposit')
+            logger.info(f'account id: {self.id} Process deposit')
             status, tx_link = await self.deposit_money()
             if status == 1:
                 logger.success(f'Deposit success | {tx_link} \n Sleep 120 sec.')
@@ -66,7 +66,7 @@ class Satori(WebClient):
                 return
        
         if token is None:
-            logger.info(f'can\'t get token for account id: {self.id}')
+            logger.info(f'account id: {self.id} can\'t get token for account id: {self.id}')
             return
 
         trade_pairs_response = await self.get_trade_pairs()
@@ -75,7 +75,7 @@ class Satori(WebClient):
 
             trade_pairs = [(item['symbol'], item['id']) for item in trade_pairs_response]
             pair_id, pair_name = self.get_random_pair(trade_pairs)
-            logger.info(f'random pair {pair_id}: {pair_name}')
+            logger.info(f'account id: {self.id} random pair {pair_id}: {pair_name}')
 
             amount = await self.get_satori_balance(4)
             # await self.get_all_balance(trade_pairs_response)
@@ -83,7 +83,7 @@ class Satori(WebClient):
 
             if order_opened is not None:
                 sleep_time = round(random.uniform(20, 60), 0)
-                logger.info(f'Sleep for {sleep_time}')
+                logger.info(f'account id: {self.id} Sleep for {sleep_time}')
                 await asyncio.sleep(sleep_time)
                 order_info = await self.get_opened_order_ids()
                 if order_info:
@@ -102,7 +102,7 @@ class Satori(WebClient):
                 logger.info("Can't open Order")
 
             sleep_time = round(random.uniform(10, 30), 0)
-            logger.info(f'Sleep for {sleep_time}')
+            logger.info(f'account id: {self.id} Sleep for {sleep_time}')
             await asyncio.sleep(sleep_time)
 
     async def get_nonce(self):
@@ -201,7 +201,7 @@ class Satori(WebClient):
         if quantity < 0.0:
             logger.error(f'To low quantity: {quantity}')
             return
-        logger.info(f'Quantity: {quantity}')
+        logger.info(f'account id: {self.id} Quantity: {quantity}')
         expire_time = await self.get_time()
         expire_time = expire_time + 60244
 
@@ -312,7 +312,7 @@ class Satori(WebClient):
             headers=self.headers)
 
         if response_code == 200 and response['error'] is False:
-            logger.info(f'Position Closed')
+            logger.info(f'account id: {self.id} Position Closed')
             return True
         else:
             return False
@@ -370,7 +370,7 @@ class Satori(WebClient):
             headers=self.headers)
 
         if response_code == 200 and response['error'] is False:
-            logger.info(f'Order Closed')
+            logger.info(f'account id: {self.id} Order Closed')
             return response
         else:
             logger.info(f"CLOSE FAILED {response}")
@@ -419,7 +419,7 @@ class Satori(WebClient):
     #not working
     async def withdraw_money(self, amount):
         timeResponse = int(time.time() * 1000)
-        logger.info(f'timerespoinse {timeResponse}')
+        logger.info(f'account id: {self.id} timerespoinse {timeResponse}')
         sign = '{\"amount\":\"1\",\"address\":\"0x2EDEc0Da3385611C59235fc711faFac5298Cc0CA\",\"assetAddr\":\"0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4\",\"expireTime\":\"1713446800352\"}'
         signed = await self.sign_message(sign)
         payload = {
