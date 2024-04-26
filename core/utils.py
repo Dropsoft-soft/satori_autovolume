@@ -6,9 +6,10 @@ import asyncio
 from art import tprint
 import sys
 import os
+import json
 
 with open(f"core/abi/erc_20.json", "r") as f:
-    ERC20_ABI = [row.strip() for row in f]
+    ERC20_ABI = json.load(f)
 
 with open(f"user_data/wallets.txt", "r") as f:
     WALLETS = [row.strip() for row in f]

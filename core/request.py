@@ -12,7 +12,7 @@ ERROR_CODE_EXCEPTION = -1
 ERROR_CODE_FAILED_REQUEST = -2
 
 
-async def global_request(wallet, method="post", request_retry=0, proxy: str = None, need_sleep=True, **kwargs):
+async def global_request(wallet, method="post", request_retry=0, proxy: str = None, need_sleep= False, **kwargs):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         if proxy is not None:
             session.proxies.update(
@@ -42,7 +42,7 @@ async def global_request(wallet, method="post", request_retry=0, proxy: str = No
                 if status_code == 201 or status_code == 200:
 
                     timing = uniform(TIMEOUT[0], TIMEOUT[1])
-                    logger.info(f'{wallet} response: {status_code}. sleep {timing}')
+                    # logger.info(f'{wallet} response: {status_code}. sleep {timing}')
                     if need_sleep:
                         time.sleep(timing)
                     try:
