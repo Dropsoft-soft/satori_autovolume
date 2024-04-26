@@ -13,6 +13,14 @@ class Satori(WebClient):
     def __init__(self, _id: int, private_key: str, chain: str) -> None:
         super().__init__(id=_id, key=private_key, chain=chain)
         self.base_url = f'https://{chain}.satori.finance/'
+        if chain == 'linea':
+            code = 'KKA5ON'
+        elif chain == 'base':
+            code == '995BOP'
+        elif chain == 'zksync':
+            code = 'KJSGOP'
+        else:
+            code = 'KJSHOT'
         self.headers = {
             'accept': 'application/json, text/plain, */*',
             'accept-language': 'en-US',
@@ -22,7 +30,7 @@ class Satori(WebClient):
             'content-type': 'application/json',
             'origin': f'https://{chain}.satori.finance',
             'pragma': 'no-cache',
-            'referer': f'{self.base_url}portfolio/account',
+            'referer': f'{self.base_url}?referralCode={code}',
             'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"macOS"',
