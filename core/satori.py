@@ -9,12 +9,6 @@ from .client import WebClient
 from loguru import logger
 from .request import global_request
 
-pairs = [
-    "ETH-USD",
-    # "BTC-USD"
-]
-
-
 class Satori(WebClient):
     def __init__(self, _id: int, private_key: str, chain: str) -> None:
         super().__init__(id=_id, key=private_key, chain=chain)
@@ -72,15 +66,14 @@ class Satori(WebClient):
 
             trade_pairs = [(item['symbol'], item['id']) for item in trade_pairs_response]
             pair_id, pair_name = self.get_random_pair(trade_pairs)
-            # logger.info(f'random pair {pair_id} > {pair_name}')
+            logger.info(f'random pair {pair_id} > {pair_name}')
 
             amount = await self.get_satori_balance(4)
             # await self.get_all_balance(trade_pairs_response)
-
-            order_opened = await self.open_position(pair_id, amount)
+            order_opened = await self.open_position(pair_id, amount, pair_name[:3])
 
             if order_opened is not None:
-                sleep_time = round(random.uniform(20, 40), 0)
+                sleep_time = round(random.uniform(20, 60), 0)
                 logger.info(f'Sleep for {sleep_time}')
                 await asyncio.sleep(sleep_time)
                 order_info = await self.get_opened_order_ids()
@@ -99,7 +92,7 @@ class Satori(WebClient):
             else:
                 logger.info("Can't open Order")
 
-            sleep_time = round(random.uniform(5, 10), 0)
+            sleep_time = round(random.uniform(10, 30), 0)
             logger.info(f'Sleep for {sleep_time}')
             await asyncio.sleep(sleep_time)
 
@@ -175,11 +168,19 @@ class Satori(WebClient):
         else:
             return None
 
-    async def open_position(self, contract_pair_id, amount):
-        amount = math.floor(amount * 100) / 100
-        price = 3200 #ETH
-        quantity = round(amount / price, 3)
+    async def get_prise(self, symbol):
+        response_code, response = await global_request(
+            wallet=self.address,
+            url=f'https://min-api.cryptocompare.com/data/price?fsym={symbol}&tsyms=USDT',
+            proxy=self.proxy,
+            headers=self.headers
+        )
+        return float(response['USDT'])
 
+    async def open_position(self, contract_pair_id, amount, symbol):
+        amount = math.floor(amount * 100) / 100
+        price = await self.get_prise(symbol)
+        quantity = round(amount / price, 2)
         expire_time = await self.get_time()
         expire_time = expire_time + 60244
 
@@ -199,7 +200,7 @@ class Satori(WebClient):
                 "quantity": quantity,
                 "signHash": message_hash,
                 "originMsg": message,
-                "lever": 1,
+                "lever": 10,
                 "amount": amount,
                 "price": price,
                 "positionType": 3,
